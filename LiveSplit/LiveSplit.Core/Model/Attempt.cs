@@ -13,6 +13,7 @@ namespace LiveSplit.Model
         public AtomicDateTime? Started { get; set; }
         public AtomicDateTime? Ended { get; set; }
         public TimeSpan? PauseTime { get; set; }
+        public TimeSpan? TimerAtTime { get; set; }
 
         /// <summary>
         /// Returns the Real Time Duration of the attempt.
@@ -32,7 +33,7 @@ namespace LiveSplit.Model
             }
         }
 
-        public Attempt(int index, Time time, AtomicDateTime? started, AtomicDateTime? ended, TimeSpan? pauseTime)
+        public Attempt(int index, Time time, AtomicDateTime? started, AtomicDateTime? ended, TimeSpan? pauseTime, TimeSpan? timerAtTime)
             : this()
         {
             Index = index;
@@ -40,6 +41,7 @@ namespace LiveSplit.Model
             Started = started;
             Ended = ended;
             PauseTime = pauseTime;
+            TimerAtTime = timerAtTime;
         }
 
         public XmlNode ToXml(XmlDocument document)
@@ -74,6 +76,13 @@ namespace LiveSplit.Model
                 var pauseTime = document.CreateElement("PauseTime");
                 pauseTime.InnerText = PauseTime.ToString();
                 attempt.AppendChild(pauseTime);
+            }
+
+            if (TimerAtTime.HasValue)
+            {
+                var timerAtTime = document.CreateElement("PauseTime");
+                timerAtTime.InnerText = TimerAtTime.ToString();
+                attempt.AppendChild(timerAtTime);
             }
 
             return attempt;
@@ -112,7 +121,15 @@ namespace LiveSplit.Model
                     pauseTime = x;
             }
 
-            return new Attempt(index, newTime, started, ended, pauseTime);
+            TimeSpan? timerAtTime = null;
+            if (node.GetElementsByTagName("PauseTime").Count > 0)
+            {
+                TimeSpan x;
+                if (TimeSpan.TryParse(node["PauseTime"].InnerText, out x))
+                    timerAtTime = x;
+            }
+
+            return new Attempt(index, newTime, started, ended, pauseTime, timerAtTime);
         }
 
         public DynamicJsonObject ToJson()
@@ -124,6 +141,7 @@ namespace LiveSplit.Model
             json.started = Started;
             json.ended = Ended;
             json.pauseTime = PauseTime;
+            json.timerAtTime = TimerAtTime;
             return json;
         }
     }

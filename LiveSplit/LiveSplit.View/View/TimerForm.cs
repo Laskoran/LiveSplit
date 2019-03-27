@@ -1695,6 +1695,56 @@ namespace LiveSplit.View
             Cursor.Current = Cursors.Arrow;
         }
 
+        private void RestoreLastRun()
+        {
+            try
+            {
+                var attemptCount = CurrentState.Run.AttemptHistory.Count;
+                var attemptToRestore = CurrentState.Run.AttemptHistory.Last();
+                var timePausedAt = attemptToRestore.TimerAtTime;
+                var startTime = attemptToRestore.Started;
+                var numberOfSegments = 0;
+                TimeSpan realTimeSumUp = new TimeSpan(0, 0, 0, 0, 0);
+                TimeSpan gameTimeSumUp = new TimeSpan(0, 0, 0, 0, 0);
+
+                CurrentState.Run.HasChanged = false;
+                CurrentState.Run.AttemptHistory.RemoveAt(attemptCount - 1);
+
+                var segments = CurrentState.Run.ToList();
+                for (int i = 0; i < segments.Count; i++)
+                {
+                    var segment = segments[i];
+                    if (segment.SegmentHistory.Count != attemptCount)
+                    {
+                        numberOfSegments = i;
+                        break;
+                    }
+                    else
+                    {
+                        realTimeSumUp += (segment.SegmentHistory[attemptCount].RealTime ?? new TimeSpan(0, 0, 0, 0, 0));
+                        gameTimeSumUp += (segment.SegmentHistory[attemptCount].GameTime ?? new TimeSpan(0, 0, 0, 0, 0));
+                        segment.SplitTime = new Time(realTimeSumUp, gameTimeSumUp);
+                        segment.SegmentHistory.Remove(attemptCount);
+                    }
+
+                };
+                
+                CurrentState.CurrentSplitIndex = numberOfSegments;
+                CurrentState.TimePausedAt = timePausedAt ?? realTimeSumUp;
+                CurrentState.AttemptStarted = startTime ?? TimeStamp.CurrentDateTime;
+                CurrentState.CurrentPhase = TimerPhase.Paused;
+
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                DontRedraw = true;
+                MessageBox.Show(this, "Resuming the last run was not possible", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                DontRedraw = false;
+            }
+
+        }
+
         private void OpenSplits()
         {
             using (var splitDialog = new OpenFileDialog())
@@ -1804,6 +1854,29 @@ namespace LiveSplit.View
             {
                 MessageBox.Show(this, "Splits could not be saved!", "Save Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Log.Error(ex);
+            }
+        }
+
+        private void OpenSplitsAndResumeRun()
+        {
+            using (var splitDialog = new OpenFileDialog())
+            {
+                IsInDialogMode = true;
+                try
+                {
+                    if (Settings.RecentSplits.Any() && !string.IsNullOrEmpty(Settings.RecentSplits.Last().Path))
+                        splitDialog.InitialDirectory = Path.GetDirectoryName(Settings.RecentSplits.Last().Path);
+                    var result = splitDialog.ShowDialog(this);
+                    if (result == DialogResult.OK)
+                    {
+                        OpenRunFromFile(splitDialog.FileName, CurrentState.CurrentTimingMethod, CurrentState.CurrentHotkeyProfile);
+                        RestoreLastRun();
+                    }
+                }
+                finally
+                {
+                    IsInDialogMode = false;
+                }
             }
         }
 
@@ -2210,6 +2283,11 @@ namespace LiveSplit.View
         private void saveSplitsMenuItem_Click(object sender, EventArgs e)
         {
             SaveSplits(true);
+        } 
+
+        private void openSplitsResumeRunMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenSplitsAndResumeRun();
         }
 
         private void editSplitsMenuItem_Click(object sender, EventArgs e)

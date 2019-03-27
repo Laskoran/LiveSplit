@@ -213,7 +213,7 @@ namespace LiveSplit.Model
                 time = CurrentState.CurrentTime;
             var maxIndex = CurrentState.Run.AttemptHistory.DefaultIfEmpty().Max(x => x.Index);
             var newIndex = Math.Max(0, maxIndex + 1);
-            var newAttempt = new Attempt(newIndex, time, CurrentState.AttemptStarted, CurrentState.AttemptEnded, CurrentState.PauseTime);
+            var newAttempt = new Attempt(newIndex, time, CurrentState.AttemptStarted, CurrentState.AttemptEnded, CurrentState.PauseTime, CurrentState.TimePausedAt);
             CurrentState.Run.AttemptHistory.Add(newAttempt);
         }
 

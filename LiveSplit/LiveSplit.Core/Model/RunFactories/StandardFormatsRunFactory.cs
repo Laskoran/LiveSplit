@@ -171,6 +171,7 @@ namespace LiveSplit.Model.RunFactories
                         ParseTime(attempt.Time()),
                         ParseOptionalAtomicDateTime(attempt.Started()),
                         ParseOptionalAtomicDateTime(attempt.Ended()),
+                        ParseOptionalTimeSpan(attempt.PauseTime()),
                         ParseOptionalTimeSpan(attempt.PauseTime())
                     ));
                 }

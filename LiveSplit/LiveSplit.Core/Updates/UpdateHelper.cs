@@ -21,29 +21,29 @@ namespace LiveSplit.Updates
             {
                 try
                 {
-                    var actualUpdateables = updateables.Where(x => !AlreadyChecked.Contains(x.GetType()));
-                    if (Updater.CheckForAnyUpdate(actualUpdateables))
-                    {
-                        string dialogText = actualUpdateables.Where(x => x.CheckForUpdate()).Select(x =>
-                                x.UpdateName + " (" + x.GetNewVersion() + ")\r\n" +
-                                x.GetChangeLog().Select(y => " - " + y + "\r\n")
-                                        .Aggregate("", (y, z) => y + z) + "\r\n")
-                                        .Aggregate((x, y) => x + y) + "Do you want to update?";
-                        DialogResult result = (new ScrollableMessageBox()).Show(dialogText, "New updates are available", MessageBoxButtons.YesNo);
-                        if (result == DialogResult.Yes)
-                        {
-                            try
-                            {
-                                Updater.UpdateAll(actualUpdateables, "http://livesplit.org/update/UpdateManager.exe");
-                                closeAction();
-                            }
-                            catch (Exception e)
-                            {
-                                Log.Error(e);
-                            }
-                        }
-                    }
-                    AlreadyChecked.AddRange(actualUpdateables.Select(x => x.GetType()));
+                    //var actualUpdateables = updateables.Where(x => !AlreadyChecked.Contains(x.GetType()));
+                    //if (Updater.CheckForAnyUpdate(actualUpdateables))
+                    //{
+                    //    string dialogText = actualUpdateables.Where(x => x.CheckForUpdate()).Select(x =>
+                    //            x.UpdateName + " (" + x.GetNewVersion() + ")\r\n" +
+                    //            x.GetChangeLog().Select(y => " - " + y + "\r\n")
+                    //                    .Aggregate("", (y, z) => y + z) + "\r\n")
+                    //                    .Aggregate((x, y) => x + y) + "Do you want to update?";
+                    //    DialogResult result = (new ScrollableMessageBox()).Show(dialogText, "New updates are available", MessageBoxButtons.YesNo);
+                    //    if (result == DialogResult.Yes)
+                    //    {
+                    //        try
+                    //        {
+                    //            Updater.UpdateAll(actualUpdateables, "http://livesplit.org/update/UpdateManager.exe");
+                    //            closeAction();
+                    //        }
+                    //        catch (Exception e)
+                    //        {
+                    //            Log.Error(e);
+                    //        }
+                    //    }
+                    //}
+                    //AlreadyChecked.AddRange(actualUpdateables.Select(x => x.GetType()));
                 }
                 catch (Exception e)
                 {
