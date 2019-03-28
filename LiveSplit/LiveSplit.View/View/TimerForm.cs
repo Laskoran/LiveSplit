@@ -1721,10 +1721,21 @@ namespace LiveSplit.View
                     }
                     else
                     {
+                        var segmentTime = new Time(segment.SegmentHistory[attemptCount].RealTime, segment.SegmentHistory[attemptCount].GameTime);
+                                                
                         realTimeSumUp += (segment.SegmentHistory[attemptCount].RealTime ?? new TimeSpan(0, 0, 0, 0, 0));
                         gameTimeSumUp += (segment.SegmentHistory[attemptCount].GameTime ?? new TimeSpan(0, 0, 0, 0, 0));
                         segment.SplitTime = new Time(realTimeSumUp, gameTimeSumUp);
                         segment.SegmentHistory.Remove(attemptCount);
+
+                        //fixing best segment time
+                        if (segment.BestSegmentTime.ToString() == segmentTime.ToString())
+                        {
+                            var minRealTime = segment.SegmentHistory.Min(x => x.Value.RealTime);
+                            var minGameTime = segment.SegmentHistory.Min(x => x.Value.GameTime);
+
+                            segment.BestSegmentTime = new Time(minRealTime, minGameTime);
+                        }
                     }
 
                 };
